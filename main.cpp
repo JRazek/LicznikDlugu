@@ -1,6 +1,7 @@
 #include <iostream>
-
-#include <math.h>
+#include <cmath>
+#include <stack>
+#include<string>
 #include <vector>
 using namespace std;
 struct Range{
@@ -10,6 +11,25 @@ struct Range{
         this->max = max;
     }
 };
+string merge2Num(string num1, int multiplier1, string num2, int multiplier2){
+    //multiplier is the power of then that the number is multiplied number2 should be equal or smaller than 1
+    int additionalZeros = multiplier1 - multiplier2;
+    for(int i = 0; i < additionalZeros; i ++){
+        num1 += "0";
+    }
+    stack<int> queue;
+    queue.push(0);
+    for (int i = 0; i < num2.size(); i ++) {
+        int indexInNum1 = num1.size() - i - 1;
+        int indexInNum2 = num2.size() - i - 1;
+        int newNum = (num1[indexInNum1] -'0') + (num2[indexInNum2] -'0') + queue.top();
+        queue.pop();
+        queue.push(newNum / 10);
+        newNum %= 10;
+        num1[indexInNum1] = to_string(newNum)[0];
+    }
+    return num1;
+}
 struct SegmentTree{
     struct BinaryNode{
         BinaryNode * parent;
@@ -99,5 +119,7 @@ int main() {
     getline(cin, line);
     string external = line;
     SegmentTree segmentTree(internal, external);
+
+    cout<<merge2Num("10905", 7, "9281", 3);
     return 0;
 }
