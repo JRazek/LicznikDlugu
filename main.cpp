@@ -37,6 +37,9 @@ struct SegmentTree{
         BinaryNode * left;
         BinaryNode * right;
         Range * range;
+
+        int powerOf10;
+
         BinaryNode(Range * range){
             this->range = range;
         }
