@@ -8,7 +8,7 @@ using stringContainer = deque<int>;
 struct Range{
     int min;
     int max;
-    char value;
+    int value = -1;
     Range(int min, int max, char v){
         this->min = min;
         this->max = max;
@@ -47,13 +47,12 @@ struct SegmentTree{
     struct BinaryNode{
         int id;
         Range * range;
+        int value;
         BinaryNode(int id, Range * r){
             this->id = id;
             this->range = r;
         }
     };
-
-    BinaryNode * root;
 
     int height;
     int firstFloorSize;
@@ -89,12 +88,14 @@ struct SegmentTree{
     }
     vector<BinaryNode *> rangeQuery(Range * range, int nodeID = 0){
         BinaryNode * parent = nodes[nodeID];
-        BinaryNode * leftChild = getChild(nodeID, true);
-        BinaryNode * rightChild = getChild(nodeID, false);
 
         if(range->min == parent->range->min && range->max == parent->range->max){
             return {parent};
         }
+
+        BinaryNode * leftChild = getChild(nodeID, true);
+        BinaryNode * rightChild = getChild(nodeID, false);
+
 
 
         Range * commonLeft = Range::commonPart(range, leftChild->range);
@@ -131,7 +132,7 @@ int main() {
     getline(cin, line);
     vector<string> args = split(line, ' ');
     int numSize = stoi(args[0]);
-    int queries = stoi(args[1]);
+    int queriesCount = stoi(args[1]);
 
     getline(cin, line);
     string internal = line;
@@ -146,7 +147,7 @@ int main() {
     for(int i = 0; i < sum.size(); i ++){
         if(sum[i] == '9'){
             if(first){
-                intervals.push_back(new Range(i, 0, '9'));
+                intervals.push_back(new Range(i, 0, 9));
                 first = false;
             }
             intervals.back()->max = i;
@@ -155,6 +156,22 @@ int main() {
         }
     }
     SegmentTree segmentTree(sum);
-    vector<SegmentTree::BinaryNode *> nodes = segmentTree.rangeQuery(new Range(0,4));
+    for(int i = 0; i < intervals.size(); i ++){
+        Range * interval = intervals[i];
+        vector<SegmentTree::BinaryNode *> nodes = segmentTree.rangeQuery(new Range(interval->min,interval->max));
+        for(int j = 0; j < nodes.size(); j ++){
+            SegmentTree::BinaryNode * node = nodes[j];
+            node->value = interval->value;
+        }
+    }
+    for(int i = 0; i < queriesCount; i++){
+        getline(cin, line);
+        args = split(line);
+        char queryType = args[0][0];
+        if(queryType == 'S'){
+            int digitNum = stoi(args[1]);
+            cout<<segmentTree.rangeQuery(new Range(digitNum, digitNum))[0]->value;
+        }
+    }
     return 0;
 }
