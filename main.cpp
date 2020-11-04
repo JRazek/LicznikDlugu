@@ -170,7 +170,17 @@ int main() {
             //must fix the num so it is actually from the front and 0
             cout<<segmentTree.rangeQuery(new Range(digitNum, digitNum))[0]->value<<"\n";
         }else{
-
+            int digitNum = internal.size() - (stoi(args[1]) - 1);//same length for both
+            int newNumber = stoi(args[2]);
+            int delta;
+            if(queryType == 'W'){
+                delta = (newNumber - (internal[digitNum]-'0'));
+            } else{
+                delta = (newNumber - (external[digitNum]-'0'));
+            }
+            /**
+             * continue here. Updates to do. Check if the segment is 9
+             */
         }
     }
     return 0;
