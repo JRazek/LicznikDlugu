@@ -54,14 +54,17 @@ struct SegmentTree{
         }
     };
 
+    int debtLength;
     int height;
     int firstFloorSize;
     vector< BinaryNode * > nodes;
-    SegmentTree(string sum){
-        float logVal = log2(sum.size());
+    SegmentTree(string d){
+        this->debtLength = d.size();
+        float logVal = log2(d.size());
         this->firstFloorSize = pow(2, (int)logVal + (bool)((int)logVal != logVal));
         this->height = log2(firstFloorSize) + 1;
         buildTree();
+        preProcess(d);
     }
     void buildTree(){
         int nodesCount = pow(2, height) - 1;
@@ -77,7 +80,23 @@ struct SegmentTree{
             BinaryNode * n = nodes[i];
             n->range->min = getChild(i, true)->range->min;
             n->range->max = getChild(i, false)->range->max;
-            getParent(i);
+        }
+    }
+    void preProcess(string debt){
+        for(int i = 0 ; i < firstFloorSize; i ++){
+            BinaryNode * n = nodes[i + pow(2, height - 1) - 1];
+            //consider putting it in the end
+            if(i < debt.size()) {
+                n->value = debt[i]-'0';
+            } else{
+                n->value = 0;
+            }
+        }
+        for(int i = 0; i < nodes.size() - firstFloorSize; i++){
+            BinaryNode * n = nodes[i];
+            int leftVal = getChild(i, true)->value;
+            int rightVal = getChild(i, false)->value;
+            n->value = leftVal == rightVal ? leftVal : -1;
         }
     }
     BinaryNode * getChild(int binaryNodeID, bool left){
@@ -141,36 +160,17 @@ int main() {
 
     string sum = addNumbers(internal, external);
 
-    vector<Range *> intervals;
-
-    bool first = true;
-    for(int i = 0; i < sum.size(); i ++){
-        if(sum[i] == '9'){
-            if(first){
-                intervals.push_back(new Range(i, 0, 9));
-                first = false;
-            }
-            intervals.back()->max = i;
-        }else{
-            first = true;
-        }
-    }
     SegmentTree segmentTree(sum);
-    for(int i = 0; i < intervals.size(); i ++){
-        Range * interval = intervals[i];
-        vector<SegmentTree::BinaryNode *> nodes = segmentTree.rangeQuery(new Range(interval->min,interval->max));
-        for(int j = 0; j < nodes.size(); j ++){
-            SegmentTree::BinaryNode * node = nodes[j];
-            node->value = interval->value;
-        }
-    }
     for(int i = 0; i < queriesCount; i++){
         getline(cin, line);
         args = split(line);
         char queryType = args[0][0];
         if(queryType == 'S'){
-            int digitNum = stoi(args[1]);
-            cout<<segmentTree.rangeQuery(new Range(digitNum, digitNum))[0]->value;
+            int digitNum = sum.size() - (stoi(args[1]) - 1);
+            //must fix the num so it is actually from the front and 0
+            cout<<segmentTree.rangeQuery(new Range(digitNum, digitNum))[0]->value<<"\n";
+        }else{
+
         }
     }
     return 0;
