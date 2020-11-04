@@ -11,7 +11,7 @@ struct Range{
         this->max = max;
     }
 };
-string merge2Num(string num1, int multiplier1, string num2, int multiplier2){
+string merge2Num(string &num1, int multiplier1, string &num2, int multiplier2){
     //multiplier is the power of then that the number is multiplied number2 should be equal or smaller than 1
     int additionalZeros = multiplier1 - multiplier2;
     for(int i = 0; i < additionalZeros; i ++){
@@ -28,6 +28,7 @@ string merge2Num(string num1, int multiplier1, string num2, int multiplier2){
         newNum %= 10;
         num1[indexInNum1] = to_string(newNum)[0];
     }
+
     return num1;
 }
 struct SegmentTree{
@@ -36,20 +37,24 @@ struct SegmentTree{
 
         BinaryNode * left;
         BinaryNode * right;
-        Range * range;
 
         int powerOf10;
+        string value = "";
 
-        BinaryNode(Range * range){
-            this->range = range;
+        BinaryNode(string v, int p){
+            this->value = v;
+            this->powerOf10 = p;
         }
-        BinaryNode(BinaryNode * left, BinaryNode * right, Range * range){
+        BinaryNode(BinaryNode * left, BinaryNode * right, string v, int p){
             this->left = left;
             this->right = right;
-            this->range = range;
+            this->value = v;
+            this->powerOf10 = p;
         }
-        string value;
     };
+
+    BinaryNode * root;
+
     string internal;
     string external;
 
@@ -70,25 +75,28 @@ struct SegmentTree{
             int currFloorSize = pow(2, height - i - 1);
             for(int j = 0; j < currFloorSize; j ++){
                 if(i == 0){
-                    bool first = !(j % 2);
-                    BinaryNode * binaryNode = new BinaryNode(new Range(j,j));
+                    bool odd = (j % 2);
+                    string value;
+                    value = odd ? internal[j / 2] : external[j / 2];
 
-                    if(first){
-                        binaryNode->value = internal[j];
-                    }else{
-                        binaryNode->value = external[j];
-                    }
+                    BinaryNode * binaryNode = new BinaryNode(value, currFloorSize - j/2 -1);
+
                     floors.at(i).push_back(binaryNode);
                 } else{
                     BinaryNode * leftChild = floors.at(i - 1).at(j * 2);
                     BinaryNode * rightChild = floors.at(i - 1).at(j * 2 + 1);
-                    BinaryNode * binaryNode = new BinaryNode(leftChild, rightChild, new Range(leftChild->range->min, leftChild->range->max));
+
+                    string mergedValue = merge2Num(leftChild->value, leftChild->powerOf10, rightChild->value, rightChild->powerOf10);
+                    BinaryNode * binaryNode = new BinaryNode(leftChild, rightChild, mergedValue, leftChild->powerOf10);
 
 
                     leftChild->parent = binaryNode;
                     rightChild->parent = binaryNode;
 
                     floors.at(i).push_back(binaryNode);
+                }
+                if(i == height - 1){
+                    this->root = floors.at(i)[0];
                 }
             }
             cout<<"";
@@ -121,8 +129,10 @@ int main() {
     string internal = line;
     getline(cin, line);
     string external = line;
-    SegmentTree segmentTree(internal, external);
+   // SegmentTree segmentTree(internal, external);
 
-    cout<<merge2Num("10905", 7, "9281", 3);
+   string s1 = "9";
+   string s2 = "2";
+
     return 0;
 }
