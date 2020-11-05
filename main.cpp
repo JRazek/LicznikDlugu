@@ -1,10 +1,8 @@
 #include <iostream>
 #include <cmath>
-#include <stack>
 #include<string>
 #include <vector>
 using namespace std;
-using stringContainer = deque<int>;
 struct Range{
     int min;
     int max;
@@ -177,12 +175,53 @@ struct SegmentTree{
     }
     void updateSegment(Range * range, int value, int queryNum){
         vector<BinaryNode *> nodes = rangeQuery(range);
+        DigitsInterval * digitsInterval = new DigitsInterval(range);
+        digitsInterval->value = value;
+        digitsInterval->lastUpdate = queryNum;
         for(auto n : nodes){
-            delete(n->stringBelonging);
-            n->stringBelonging = new DigitsInterval(range);
-            n->stringBelonging->value = value;
-            n->stringBelonging->lastUpdate = queryNum;
+            if(n->range->min == range->min){
+                int leftOutNumberInFloor = n->range->min - 1;
+                vector<BinaryNode *> r = rangeQuery(new Range(leftOutNumberInFloor, leftOutNumberInFloor));
+                if(r.size() == 1){
+                    BinaryNode * leftOut = r[0];
+                    if(leftOut->stringBelonging == n->stringBelonging){
+                        Range * newLeftRange = Range::commonPart(leftOut->stringBelonging->range, new Range(0, leftOutNumberInFloor));
+                        DigitsInterval * newLeftInterval = new DigitsInterval(newLeftRange);
+                        newLeftInterval->lastUpdate = queryNum;
+                        newLeftInterval->value = leftOut->stringBelonging->value;
+                        vector<BinaryNode *> leftAffected = rangeQuery(newLeftRange);
+                        for(auto l : leftAffected){
+                            l->stringBelonging = newLeftInterval;
+                        }
+                    }
+                }
+            }
+            if(n->range->max == range->max){
+                int rightOutNumberInFloor = n->range->max + 1;
+                vector<BinaryNode *> r = rangeQuery(new Range(rightOutNumberInFloor, rightOutNumberInFloor));
+                if(r.size() == 1){
+                    BinaryNode * rightOut = r[0];
+                    if(rightOut->stringBelonging == n->stringBelonging){
+                        Range * newRightRange = Range::commonPart(rightOut->stringBelonging->range, new Range(rightOut->stringBelonging->range->max + 1, firstFloorSize - 1));
+                        DigitsInterval * newRightInterval = new DigitsInterval(newRightRange);
+                        newRightInterval->lastUpdate = queryNum;
+                        newRightInterval->value = rightOut->stringBelonging->value;
+                        vector<BinaryNode *> rightAffected = rangeQuery(newRightRange);
+                        for(auto l : rightAffected){
+                            l->stringBelonging = newRightInterval;
+                        }
+                    }
+                }
+            }
+            n->stringBelonging = digitsInterval;
         }
+    }
+    void showNum(){
+        cout<<"\n";
+        for(int i = 0; i < debtLength; i ++){
+            cout<<getDigitValue(i);
+        }
+        cout<<"\n";
     }
 };
 
@@ -253,8 +292,11 @@ int main() {
     //segmentTree.rangeUpdate(new Range(0,7), 6, 1);
     const SegmentTree::DigitsInterval * interval = segmentTree.getBelongingSegment(3);
     cout<<interval->range->min<< " " << interval->range->max<<"\n";
-    segmentTree.updateSegment(new Range(0, 3), 1, 2);
-    interval = segmentTree.getBelongingSegment(1);
+    segmentTree.updateSegment(new Range(1, 5), 1, 2);
+
+    interval = segmentTree.getBelongingSegment(5);
     cout<<interval->range->min<< " " << interval->range->max<<"\n";
+
+    segmentTree.showNum();
     return 0;
 }
