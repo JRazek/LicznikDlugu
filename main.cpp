@@ -244,17 +244,17 @@ int main() {
             int newNum = oldNum + delta;
             int nextLineAdd = newNum / 10;
             newNum %= 10;
-            queryNum ++;
             int nextLineNum = segmentTree.getDigitValue(digitNum - 1);
-            //const Range * range = segmentTree.getBelongingSegment(nextLineNum);
+
+            queryNum ++;
         }
     }
 
     //segmentTree.rangeUpdate(new Range(0,7), 6, 1);
     const SegmentTree::DigitsInterval * interval = segmentTree.getBelongingSegment(3);
     cout<<interval->range->min<< " " << interval->range->max<<"\n";
-    cout<<segmentTree.getDigitValue(3)<<"\n";
     segmentTree.updateSegment(new Range(0, 3), 1, 2);
-    cout<<segmentTree.getDigitValue(3)<<"\n";
+    interval = segmentTree.getBelongingSegment(1);
+    cout<<interval->range->min<< " " << interval->range->max<<"\n";
     return 0;
 }
