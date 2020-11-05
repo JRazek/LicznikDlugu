@@ -260,14 +260,17 @@ int main() {
     }
     SegmentTree segmentTree(sum);
 
-    int queryNum = 0;
+    int answer = 0;
+    int queryNum = 0;/*
     for(int i = 0; i < queriesCount; i++){
         getline(cin, line);
         args = split(line);
         char queryType = args[0][0];
+
         if(queryType == 'S'){
             int digitNum = sum.size() - (stoi(args[1]) - 1) - 1;
             cout << segmentTree.getDigitValue(digitNum) << "\n";
+            answer ++;
         }else{
             int changedDigit = internal.size() - stoi(args[1]);
             int changedFor = stoi(args[2]);
@@ -289,13 +292,40 @@ int main() {
             nextLineAdd = newNum/10;
             newNum %=10;
             segmentTree.updateSegment(new Range(digitInSum, digitInSum), newNum, queryNum);
-            if(nextLineAdd){
-                break;
-            }
             queryNum ++;
+
+            if(nextLineAdd){
+                int nextLineNum = segmentTree.getDigitValue(digitInSum - 1);
+                int nextLineNewNum = nextLineNum + nextLineAdd;
+                if(nextLineNewNum >= 0 && nextLineNewNum <= 9){
+                    segmentTree.updateSegment(new Range(digitInSum - 1, digitInSum - 1), nextLineNewNum, queryNum);
+                    queryNum ++;
+                } else{
+                    const SegmentTree::DigitsInterval * digitsInterval = segmentTree.getBelongingSegment(digitInSum - 1);
+                    int furthestAffectedDigitNum = digitsInterval->range->min - 1;
+                    if(nextLineNewNum >= 10) {
+                        segmentTree.updateSegment(digitsInterval->range, 0, queryNum);
+                        queryNum++;
+                        nextLineNewNum %= 10;
+                        Range * tmp = new Range(furthestAffectedDigitNum, furthestAffectedDigitNum);
+                        segmentTree.updateSegment(tmp, segmentTree.getDigitValue(furthestAffectedDigitNum) + nextLineNewNum, queryNum);
+                        queryNum++;
+                    }else if(nextLineNewNum < 0){
+
+                    }
+                    else{
+                        cout<<"Error";
+                        break;
+                    }
+                }
+            }
         }
-    }
-    //segmentTree.showNum();
+    }*/
+    cout<<segmentTree.getBelongingSegment(4)->range->min<<" "<<segmentTree.getBelongingSegment(4)->range->max<<"\n";
+    segmentTree.updateSegment(new Range(4,4), 1, 0);
+    segmentTree.updateSegment(new Range(4,4), 9, 0);
+    cout<<segmentTree.getBelongingSegment(4)->range->min<<" "<<segmentTree.getBelongingSegment(4)->range->max<<"\n";
+    segmentTree.showNum();
 
     return 0;
 }
