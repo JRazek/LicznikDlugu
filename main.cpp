@@ -49,7 +49,7 @@ struct SegmentTree{
         int id;
         Range * range;
 
-        DigitsInterval * stringBelonging;
+        DigitsInterval * stringBelonging = nullptr;
         BinaryNode(int id, Range * r){
             this->id = id;
             this->range = r;
@@ -108,6 +108,7 @@ struct SegmentTree{
             n->stringBelonging->hasValue = true;
             firstFloor.push_back(n);
         }
+        cout<<"";
     }
     BinaryNode * getChild(int binaryNodeID, bool left){
         return nodes[(binaryNodeID) * 2 + !left + 1];
@@ -266,7 +267,7 @@ int main() {
         char queryType = args[0][0];
         if(queryType == 'S'){
             int digitNum = sum.size() - (stoi(args[1]) - 1);
-            //cout << segmentTree.getDigitValue(digitNum) << "\n";
+            cout << segmentTree.getDigitValue(digitNum) << "\n";
         }else{
             int digitNum = internal.size() - (stoi(args[1]) - 1);//same length for both
             int newFactorNum = stoi(args[2]);
@@ -283,21 +284,14 @@ int main() {
             int newNum = oldNum + delta;
             int nextLineAdd = newNum / 10;
             newNum %= 10;
-            int nextLineNum = segmentTree.getDigitValue(digitNum - 1);
-
+            segmentTree.updateSegment(new Range(digitNum, digitNum), newNum, queryNum);
+            if(nextLineAdd){
+                int nextLineNum = segmentTree.getDigitValue(digitNum - 1);
+            }
             queryNum ++;
         }
     }
 
-    //segmentTree.rangeUpdate(new Range(0,7), 6, 1);
-    const SegmentTree::DigitsInterval * interval = segmentTree.getBelongingSegment(3);
-    cout<<interval->range->min<< " " << interval->range->max<<"\n";
 
-
-    segmentTree.updateSegment(new Range(2, 6), 1, 2);
-    segmentTree.showNum();
-
-    interval = segmentTree.getBelongingSegment(7);
-    cout<<interval->range->min<< " " << interval->range->max<<"\n";
     return 0;
 }
