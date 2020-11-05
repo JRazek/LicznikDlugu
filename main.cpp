@@ -48,6 +48,7 @@ struct SegmentTree{
         int id;
         Range * range;
         int value;
+        int lastUpdate = -1;
         BinaryNode(int id, Range * r){
             this->id = id;
             this->range = r;
@@ -130,6 +131,32 @@ struct SegmentTree{
         }
         return result;
     }
+    void rangeUpdate(Range * range, int value, int updateNum){
+        vector<BinaryNode *> nodesToUpdate = rangeQuery(range);
+        for(int i = 0; i < nodesToUpdate.size(); i ++){
+            nodesToUpdate[i]->value = value;
+            nodesToUpdate[i]->lastUpdate = updateNum;
+        }
+    }
+    int getLeafValue(int leafNum){
+        BinaryNode * node = nodes[leafNum +  pow(2, height - 1) - 1];
+        int bestUpdate = -2;
+        int value ;
+        while (true) {
+            cout<<"";
+            if(node->lastUpdate > bestUpdate){
+                bestUpdate = node->lastUpdate;
+                value = node->value;
+            }else if(node->lastUpdate == bestUpdate && bestUpdate != -1){
+                cout<<"ERROR HERE";
+            }
+            if(getParent(node->id) == node){
+                break;
+            }
+            node = getParent(node->id);
+        }
+        return value;
+    }
 };
 
 vector<string> split(string str, char divider = ' '){
@@ -168,7 +195,7 @@ int main() {
         if(queryType == 'S'){
             int digitNum = sum.size() - (stoi(args[1]) - 1);
             //must fix the num so it is actually from the front and 0
-            cout<<segmentTree.rangeQuery(new Range(digitNum, digitNum))[0]->value<<"\n";
+            //cout<<segmentTree.rangeQuery(new Range(digitNum, digitNum))[0]->value<<"\n";
         }else{
             int digitNum = internal.size() - (stoi(args[1]) - 1);//same length for both
             int newNumber = stoi(args[2]);
@@ -178,10 +205,15 @@ int main() {
             } else{
                 delta = (newNumber - (external[digitNum]-'0'));
             }
+           // cout<<segmentTree.getLeafValue(1);
             /**
              * continue here. Updates to do. Check if the segment is 9
              */
         }
     }
+
+    cout<<segmentTree.getLeafValue(3)<<"\n";
+    segmentTree.rangeUpdate(new Range(0,7), 6, 1);
+    cout<<segmentTree.getLeafValue(3)<<"\n";
     return 0;
 }
