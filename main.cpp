@@ -266,32 +266,36 @@ int main() {
         args = split(line);
         char queryType = args[0][0];
         if(queryType == 'S'){
-            int digitNum = sum.size() - (stoi(args[1]) - 1);
+            int digitNum = sum.size() - (stoi(args[1]) - 1) - 1;
             cout << segmentTree.getDigitValue(digitNum) << "\n";
         }else{
-            int digitNum = internal.size() - (stoi(args[1]) - 1);//same length for both
-            int newFactorNum = stoi(args[2]);
+            int changedDigit = internal.size() - stoi(args[1]);
+            int changedFor = stoi(args[2]);
+
             int delta;
             if(queryType == 'W'){
-                delta = (newFactorNum - (internal[digitNum] - '0'));
-                internal[digitNum] = newFactorNum;
-            } else{
-                delta = (newFactorNum - (external[digitNum] - '0'));
-                external[digitNum] = newFactorNum;
+                delta = changedFor - (internal[changedDigit] -'0');
             }
-            int oldNum = segmentTree.getDigitValue(digitNum);
+            else if(queryType == 'Z'){
+                delta = changedFor - (external[changedDigit] -'0');
+            }
+            int digitInSum = changedDigit + 1;
 
-            int newNum = oldNum + delta;
-            int nextLineAdd = newNum / 10;
-            newNum %= 10;
-            segmentTree.updateSegment(new Range(digitNum, digitNum), newNum, queryNum);
+            int nextLineAdd;
+
+            int valueInSum = segmentTree.getDigitValue(digitInSum);
+            int newNum = valueInSum + delta;
+
+            nextLineAdd = newNum/10;
+            newNum %=10;
+            segmentTree.updateSegment(new Range(digitInSum, digitInSum), newNum, queryNum);
             if(nextLineAdd){
-                int nextLineNum = segmentTree.getDigitValue(digitNum - 1);
+                break;
             }
             queryNum ++;
         }
     }
-
+    //segmentTree.showNum();
 
     return 0;
 }
