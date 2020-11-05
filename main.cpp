@@ -147,7 +147,7 @@ struct SegmentTree{
         while(true){
             cout<<"";
             //if error here - wrong data set!
-            if(node->stringBelonging != nullptr && node->stringBelonging->lastUpdate > bestUpdate){
+            if(node->stringBelonging != nullptr && node->stringBelonging->lastUpdate >= bestUpdate){
                 bestUpdate = node->stringBelonging->lastUpdate;
                 value = node->stringBelonging->value;
             }
@@ -163,7 +163,7 @@ struct SegmentTree{
         BinaryNode * n = nodes[nodeID];
         DigitsInterval * curr = n->stringBelonging;//this must be not null
         while(true){
-            if(n->stringBelonging != nullptr && n->stringBelonging->lastUpdate >= curr->lastUpdate){
+            if(n->stringBelonging != nullptr && n->stringBelonging->lastUpdate > curr->lastUpdate){
                 curr = n->stringBelonging;
             }
             if(n == getParent(n->id)){
@@ -202,7 +202,7 @@ struct SegmentTree{
                 if(r.size() == 1){
                     BinaryNode * rightOut = r[0];
                     if(rightOut->stringBelonging == n->stringBelonging){
-                        Range * newRightRange = Range::commonPart(rightOut->stringBelonging->range, new Range(rightOut->stringBelonging->range->max + 1, firstFloorSize - 1));
+                        Range * newRightRange = Range::commonPart(rightOut->stringBelonging->range, new Range(rightOutNumberInFloor, firstFloorSize - 1));
                         DigitsInterval * newRightInterval = new DigitsInterval(newRightRange);
                         newRightInterval->lastUpdate = queryNum;
                         newRightInterval->value = rightOut->stringBelonging->value;
@@ -292,11 +292,12 @@ int main() {
     //segmentTree.rangeUpdate(new Range(0,7), 6, 1);
     const SegmentTree::DigitsInterval * interval = segmentTree.getBelongingSegment(3);
     cout<<interval->range->min<< " " << interval->range->max<<"\n";
-    segmentTree.updateSegment(new Range(1, 5), 1, 2);
 
-    interval = segmentTree.getBelongingSegment(5);
-    cout<<interval->range->min<< " " << interval->range->max<<"\n";
 
+    segmentTree.updateSegment(new Range(2, 6), 1, 2);
     segmentTree.showNum();
+
+    interval = segmentTree.getBelongingSegment(7);
+    cout<<interval->range->min<< " " << interval->range->max<<"\n";
     return 0;
 }
