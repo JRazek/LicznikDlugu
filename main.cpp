@@ -8,13 +8,6 @@ using stringContainer = deque<int>;
 struct Range{
     int min;
     int max;
-    int value = -1;
-    int lastUpdate;
-    Range(int min, int max, char v){
-        this->min = min;
-        this->max = max;
-        this->value = v;
-    }
     Range(int min, int max){
         this->min = min;
         this->max = max;
@@ -25,7 +18,6 @@ struct Range{
         return new Range(min, max);
     }
 };
-
 string addNumbers(const string &num1, const string &num2){
     string result = "0" + num1;
 
@@ -45,11 +37,21 @@ string addNumbers(const string &num1, const string &num2){
     return result;
 }
 struct SegmentTree{
+    struct BinaryNode;
+    struct DigitsInterval{
+        Range * range;
+        int value;
+        bool hasValue = false;
+        int lastUpdate;
+        DigitsInterval(Range * r){
+            this->range = new Range(r->min, r->max);
+        }
+    };
     struct BinaryNode{
         int id;
         Range * range;
 
-        Range * stringBelonging = nullptr;
+        DigitsInterval * stringBelonging;
         BinaryNode(int id, Range * r){
             this->id = id;
             this->range = r;
@@ -59,6 +61,9 @@ struct SegmentTree{
     int debtLength;
     int height;
     int firstFloorSize;
+
+    int lastUpdate = -1;
+
     vector< BinaryNode * > nodes;
     SegmentTree(string d){
         this->debtLength = d.size();
@@ -95,32 +100,15 @@ struct SegmentTree{
                 value = 0;
             }
             if(i == 0 || prevValue != value){
-                n->stringBelonging = new Range(n->range->min, n->range->max);
+                n->stringBelonging = new DigitsInterval(n->range);
                 n->stringBelonging->value = value;
             }else{
                 n->stringBelonging = nodes[nodeID - 1]->stringBelonging;
-                n->stringBelonging->max = n->range->max;
+                n->stringBelonging->range->max = n->range->max;
             }
             n->stringBelonging->lastUpdate = -1;
-        }
-
-        for(int i = 0; i < nodes.size() - firstFloorSize; i++){
-            int nodeID = nodes.size() - firstFloorSize - i - 1;
-            BinaryNode * n = nodes[nodeID];
-            BinaryNode * leftChild = getChild(nodeID, true);
-            BinaryNode * rightChild = getChild(nodeID, false);
-            if(leftChild->stringBelonging != nullptr && rightChild->stringBelonging != nullptr) {
-                if (leftChild->stringBelonging->value == rightChild->stringBelonging->value) {
-                    Range *s = new Range(n->range->min, n->range->max);
-                    s->value = leftChild->stringBelonging->value;
-                    n->stringBelonging = s;
-                    leftChild->stringBelonging = s;
-                    rightChild->stringBelonging = s;
-                    n->stringBelonging->lastUpdate = -1;
-                }
-            }else{
-                n->stringBelonging = nullptr;
-            }
+            n->stringBelonging->hasValue = true;
+            firstFloor.push_back(n);
         }
     }
     BinaryNode * getChild(int binaryNodeID, bool left){
@@ -154,12 +142,13 @@ struct SegmentTree{
         }
         return result;
     }
-    int getLeafValue(const int digitNumber){
+    int getDigitValue(const int digitNumber){
         const BinaryNode * node = nodes[digitNumber + pow(2, height - 1) - 1];
         int bestUpdate = -2;
         int value ;
         while(true){
             cout<<"";
+            //if error here - wrong data set!
             if(node->stringBelonging != nullptr && node->stringBelonging->lastUpdate > bestUpdate){
                 bestUpdate = node->stringBelonging->lastUpdate;
                 value = node->stringBelonging->value;
@@ -170,6 +159,30 @@ struct SegmentTree{
             node = getParent(node->id);
         }
         return value;
+    }
+    const DigitsInterval * getBelongingSegment(int digitNum){
+        int nodeID = digitNum + pow(2, height - 1) - 1;
+        BinaryNode * n = nodes[nodeID];
+        DigitsInterval * curr = n->stringBelonging;//this must be not null
+        while(true){
+            if(n->stringBelonging != nullptr && n->stringBelonging->lastUpdate >= curr->lastUpdate){
+                curr = n->stringBelonging;
+            }
+            if(n == getParent(n->id)){
+                break;
+            }
+            n = getParent(n->id);
+        }
+        return curr;
+    }
+    void updateSegment(Range * range, int value, int queryNum){
+        vector<BinaryNode *> nodes = rangeQuery(range);
+        for(auto n : nodes){
+            delete(n->stringBelonging);
+            n->stringBelonging = new DigitsInterval(range);
+            n->stringBelonging->value = value;
+            n->stringBelonging->lastUpdate = queryNum;
+        }
     }
 };
 
@@ -200,7 +213,11 @@ int main() {
     string external = line;
 
     string sum = addNumbers(internal, external);
-
+    for(int i = 0; i < sum.size(); i ++){
+        if(sum[i] != '9'){
+            cout<<"";
+        }
+    }
     SegmentTree segmentTree(sum);
 
     int queryNum = 0;
@@ -210,7 +227,7 @@ int main() {
         char queryType = args[0][0];
         if(queryType == 'S'){
             int digitNum = sum.size() - (stoi(args[1]) - 1);
-            cout<<segmentTree.getLeafValue(digitNum)<<"\n";
+            //cout << segmentTree.getDigitValue(digitNum) << "\n";
         }else{
             int digitNum = internal.size() - (stoi(args[1]) - 1);//same length for both
             int newFactorNum = stoi(args[2]);
@@ -222,16 +239,22 @@ int main() {
                 delta = (newFactorNum - (external[digitNum] - '0'));
                 external[digitNum] = newFactorNum;
             }
-            int oldNum = segmentTree.getLeafValue(digitNum);
+            int oldNum = segmentTree.getDigitValue(digitNum);
 
             int newNum = oldNum + delta;
-            int nextLineNum = newNum / 10;
+            int nextLineAdd = newNum / 10;
             newNum %= 10;
             queryNum ++;
+            int nextLineNum = segmentTree.getDigitValue(digitNum - 1);
+            //const Range * range = segmentTree.getBelongingSegment(nextLineNum);
         }
     }
 
     //segmentTree.rangeUpdate(new Range(0,7), 6, 1);
-    //cout<<segmentTree.getLeafValue(3)<<"\n";
+    const SegmentTree::DigitsInterval * interval = segmentTree.getBelongingSegment(3);
+    cout<<interval->range->min<< " " << interval->range->max<<"\n";
+    cout<<segmentTree.getDigitValue(3)<<"\n";
+    segmentTree.updateSegment(new Range(0, 3), 1, 2);
+    cout<<segmentTree.getDigitValue(3)<<"\n";
     return 0;
 }
