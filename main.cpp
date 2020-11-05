@@ -9,6 +9,7 @@ struct Range{
     int min;
     int max;
     int value = -1;
+    int lastUpdate;
     Range(int min, int max, char v){
         this->min = min;
         this->max = max;
@@ -47,8 +48,8 @@ struct SegmentTree{
     struct BinaryNode{
         int id;
         Range * range;
-        int value;
-        int lastUpdate = -1;
+
+        Range * stringBelonging = nullptr;
         BinaryNode(int id, Range * r){
             this->id = id;
             this->range = r;
@@ -84,20 +85,42 @@ struct SegmentTree{
         }
     }
     void preProcess(string debt){
-        for(int i = 0 ; i < firstFloorSize; i ++){
-            BinaryNode * n = nodes[i + pow(2, height - 1) - 1];
-            //consider putting it in the end
-            if(i < debt.size()) {
-                n->value = debt[i]-'0';
-            } else{
-                n->value = 0;
+        vector<BinaryNode *> firstFloor;
+        for(int i = 0; i < firstFloorSize; i ++){
+            int nodeID = i + pow(2, height - 1) - 1;
+            BinaryNode * n = nodes[nodeID];
+            int prevValue = debt[i - 1]-'0';
+            int value = debt[i]-'0';
+            if(i >= debtLength){
+                value = 0;
             }
+            if(i == 0 || prevValue != value){
+                n->stringBelonging = new Range(n->range->min, n->range->max);
+                n->stringBelonging->value = value;
+            }else{
+                n->stringBelonging = nodes[nodeID - 1]->stringBelonging;
+                n->stringBelonging->max = n->range->max;
+            }
+            n->stringBelonging->lastUpdate = -1;
         }
+
         for(int i = 0; i < nodes.size() - firstFloorSize; i++){
-            BinaryNode * n = nodes[i];
-            int leftVal = getChild(i, true)->value;
-            int rightVal = getChild(i, false)->value;
-            n->value = leftVal == rightVal ? leftVal : -1;
+            int nodeID = nodes.size() - firstFloorSize - i - 1;
+            BinaryNode * n = nodes[nodeID];
+            BinaryNode * leftChild = getChild(nodeID, true);
+            BinaryNode * rightChild = getChild(nodeID, false);
+            if(leftChild->stringBelonging != nullptr && rightChild->stringBelonging != nullptr) {
+                if (leftChild->stringBelonging->value == rightChild->stringBelonging->value) {
+                    Range *s = new Range(n->range->min, n->range->max);
+                    s->value = leftChild->stringBelonging->value;
+                    n->stringBelonging = s;
+                    leftChild->stringBelonging = s;
+                    rightChild->stringBelonging = s;
+                    n->stringBelonging->lastUpdate = -1;
+                }
+            }else{
+                n->stringBelonging = nullptr;
+            }
         }
     }
     BinaryNode * getChild(int binaryNodeID, bool left){
@@ -131,26 +154,17 @@ struct SegmentTree{
         }
         return result;
     }
-    void rangeUpdate(Range * range, int value, int updateNum){
-        vector<BinaryNode *> nodesToUpdate = rangeQuery(range);
-        for(int i = 0; i < nodesToUpdate.size(); i ++){
-            nodesToUpdate[i]->value = value;
-            nodesToUpdate[i]->lastUpdate = updateNum;
-        }
-    }
-    int getLeafValue(int leafNum){
-        BinaryNode * node = nodes[leafNum +  pow(2, height - 1) - 1];
+    int getLeafValue(const int digitNumber){
+        const BinaryNode * node = nodes[digitNumber + pow(2, height - 1) - 1];
         int bestUpdate = -2;
         int value ;
-        while (true) {
+        while(true){
             cout<<"";
-            if(node->lastUpdate > bestUpdate){
-                bestUpdate = node->lastUpdate;
-                value = node->value;
-            }else if(node->lastUpdate == bestUpdate && bestUpdate != -1){
-                cout<<"ERROR HERE";
+            if(node->stringBelonging != nullptr && node->stringBelonging->lastUpdate > bestUpdate){
+                bestUpdate = node->stringBelonging->lastUpdate;
+                value = node->stringBelonging->value;
             }
-            if(getParent(node->id) == node){
+            if(node == getParent(node->id)){
                 break;
             }
             node = getParent(node->id);
@@ -188,32 +202,36 @@ int main() {
     string sum = addNumbers(internal, external);
 
     SegmentTree segmentTree(sum);
+
+    int queryNum = 0;
     for(int i = 0; i < queriesCount; i++){
         getline(cin, line);
         args = split(line);
         char queryType = args[0][0];
         if(queryType == 'S'){
             int digitNum = sum.size() - (stoi(args[1]) - 1);
-            //must fix the num so it is actually from the front and 0
-            //cout<<segmentTree.rangeQuery(new Range(digitNum, digitNum))[0]->value<<"\n";
+            cout<<segmentTree.getLeafValue(digitNum)<<"\n";
         }else{
             int digitNum = internal.size() - (stoi(args[1]) - 1);//same length for both
-            int newNumber = stoi(args[2]);
+            int newFactorNum = stoi(args[2]);
             int delta;
             if(queryType == 'W'){
-                delta = (newNumber - (internal[digitNum]-'0'));
+                delta = (newFactorNum - (internal[digitNum] - '0'));
+                internal[digitNum] = newFactorNum;
             } else{
-                delta = (newNumber - (external[digitNum]-'0'));
+                delta = (newFactorNum - (external[digitNum] - '0'));
+                external[digitNum] = newFactorNum;
             }
-           // cout<<segmentTree.getLeafValue(1);
-            /**
-             * continue here. Updates to do. Check if the segment is 9
-             */
+            int oldNum = segmentTree.getLeafValue(digitNum);
+
+            int newNum = oldNum + delta;
+            int nextLineNum = newNum / 10;
+            newNum %= 10;
+            queryNum ++;
         }
     }
 
-    cout<<segmentTree.getLeafValue(3)<<"\n";
-    segmentTree.rangeUpdate(new Range(0,7), 6, 1);
-    cout<<segmentTree.getLeafValue(3)<<"\n";
+    //segmentTree.rangeUpdate(new Range(0,7), 6, 1);
+    //cout<<segmentTree.getLeafValue(3)<<"\n";
     return 0;
 }
