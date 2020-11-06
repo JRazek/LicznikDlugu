@@ -261,8 +261,8 @@ vector<string> split(string str, char divider = ' '){
 }
 
 int main() {
-   // std::ios_base::sync_with_stdio(false);
-   // std::cin.tie(NULL);
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(NULL);
 
     string line;
     getline(cin, line);
@@ -294,8 +294,8 @@ int main() {
             cout << segmentTree.getDigitValue(digitNum) << "\n";
             answer ++;
 
-           // string tmpAdded = addNumbers(internal, external);
-           // string tmpTree = segmentTree.getFullNum();
+            // string tmpAdded = addNumbers(internal, external);
+            // string tmpTree = segmentTree.getFullNum();
         }else{
             int changedDigit = internal.size() - stoi(args[1]);
             int changedFor = stoi(args[2]);
@@ -359,9 +359,9 @@ int main() {
                 }
             }
 
-           // cout<<changeNum<<" ";*/
-           // segmentTree.showNum();
-           // cout<<"";
+            // cout<<changeNum<<" ";*/
+            // segmentTree.showNum();
+            // cout<<"";
             changeNum++;
         }
     }
