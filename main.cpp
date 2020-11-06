@@ -44,6 +44,9 @@ struct SegmentTree{
         DigitsInterval(Range * r){
             this->range = new Range(r->min, r->max);
         }
+        ~DigitsInterval(){
+            delete range;
+        }
     };
     struct BinaryNode{
         int id;
@@ -63,6 +66,11 @@ struct SegmentTree{
     int queryNum = 0;
 
     vector< BinaryNode * > nodes;
+    ~SegmentTree(){
+        for(int i = 0; i < nodes.size(); i ++){
+            delete nodes[i];
+        }
+    }
     SegmentTree(string d){
         this->debtLength = d.size();
         float logVal = log2(d.size());
@@ -141,6 +149,8 @@ struct SegmentTree{
             vector<BinaryNode *> resRight = rangeQuery(commonRight, rightChild->id);
             result.insert(result.begin(), resRight.begin(), resRight.end());
         }
+        delete commonRight;
+        delete commonLeft;
         return result;
     }
     int getDigitValue(const int digitNumber){
@@ -208,8 +218,6 @@ struct SegmentTree{
                 newLeftInterval->lastUpdate = queryNum;
                 newLeftInterval->value = leftInterval->value;
                 vector<BinaryNode *> affected = rangeQuery(newLeftInterval->range);
-                leftInterval = nullptr;
-                delete (leftInterval);
                 for(BinaryNode * n : affected){
                     n->stringBelonging = newLeftInterval;
                 }
@@ -224,8 +232,6 @@ struct SegmentTree{
                 newRightInterval->lastUpdate = queryNum;
                 newRightInterval->value = rightInterval->value;
                 vector<BinaryNode *> affected = rangeQuery(newRightInterval->range);
-                rightInterval = nullptr;
-                delete (rightInterval);
                 for(BinaryNode * n : affected){
                     n->stringBelonging = newRightInterval;
                 }
@@ -237,7 +243,6 @@ struct SegmentTree{
             n->stringBelonging = digitsInterval;
         }
         this->queryNum ++;
-        delete range;
     }
     string getFullNum(){
         string s = "";
@@ -333,11 +338,11 @@ int main() {
                     valueBeforeRange -= 1;
                     newSum += 10;
                 }
-
-                segmentTree.updateSegment(new Range(digitInSum, digitInSum), newSum);
+                Range * tmpR = new Range(digitInSum, digitInSum);
+                segmentTree.updateSegment(tmpR, newSum);
                 segmentTree.updateSegment(range, valueInRange);
-                segmentTree.updateSegment(new Range(range->min - 1, range->min - 1), valueBeforeRange);
-                delete range;
+                tmpR = new Range(range->min - 1, range->min - 1);
+                segmentTree.updateSegment(tmpR, valueBeforeRange);
             }
             else{
                 int nextLineAdd = 0;
@@ -360,7 +365,6 @@ int main() {
                 if(nextLineValue > 9 || nextLineValue < 0){
                     cout<<"ERROR\n";
                 }
-                delete segmentBefore;
             }
 
             // cout<<changeNum<<" ";*/
