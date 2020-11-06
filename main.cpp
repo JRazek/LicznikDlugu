@@ -164,6 +164,9 @@ struct SegmentTree{
         if(digitNum < 0 || digitNum >= debtLength){
             return nullptr;
         }
+        if(digitNum == 4527){
+            cout<<"";
+        }
         int nodeID = digitNum + pow(2, height - 1) - 1;
         BinaryNode * n = nodes[nodeID];
         DigitsInterval * curr = n->stringBelonging;//this must be not null
@@ -179,6 +182,10 @@ struct SegmentTree{
         return curr;
     }
     void updateSegment(Range * range, int value){
+        if(value < 0 || value > 9){
+            cout<<"ERROR!";
+            return;
+        }
         vector<BinaryNode *> nodes = rangeQuery(range);
         DigitsInterval * digitsInterval = new DigitsInterval(range);
         digitsInterval->value = value;
@@ -186,7 +193,6 @@ struct SegmentTree{
 
         int leftOutNodeID = range->min - 1;
         int rightOutNodeID = range->max + 1;
-
         DigitsInterval * leftInterval = getBelongingSegment(leftOutNodeID);
         DigitsInterval * rightInterval = getBelongingSegment(rightOutNodeID);
         if(leftInterval != nullptr) {
@@ -198,6 +204,7 @@ struct SegmentTree{
                 newLeftInterval->lastUpdate = queryNum;
                 newLeftInterval->value = leftInterval->value;
                 vector<BinaryNode *> affected = rangeQuery(newLeftInterval->range);
+                leftInterval = nullptr;
                 delete (leftInterval);
                 for(BinaryNode * n : affected){
                     n->stringBelonging = newLeftInterval;
@@ -213,6 +220,7 @@ struct SegmentTree{
                 newRightInterval->lastUpdate = queryNum;
                 newRightInterval->value = rightInterval->value;
                 vector<BinaryNode *> affected = rangeQuery(newRightInterval->range);
+                rightInterval = nullptr;
                 delete (rightInterval);
                 for(BinaryNode * n : affected){
                     n->stringBelonging = newRightInterval;
@@ -250,6 +258,9 @@ vector<string> split(string str, char divider = ' '){
 }
 
 int main() {
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(NULL);
+
     string line;
     getline(cin, line);
     vector<string> args = split(line, ' ');
@@ -270,7 +281,7 @@ int main() {
     SegmentTree segmentTree(sum);
 
     int answer = 0;
-    int queryNum = 0;/*
+
     for(int i = 0; i < queriesCount; i++){
         getline(cin, line);
         args = split(line);
@@ -288,58 +299,48 @@ int main() {
             if(queryType == 'W'){
                 delta = changedFor - (internal[changedDigit] -'0');
             }
-            else if(queryType == 'Z'){
+            else{
                 delta = changedFor - (external[changedDigit] -'0');
             }
+
             int digitInSum = changedDigit + 1;
 
-            int nextLineAdd;
-
             int valueInSum = segmentTree.getDigitValue(digitInSum);
-            int newNum = valueInSum + delta;
+            int newSum = valueInSum + delta;
 
-            nextLineAdd = newNum/10;
-            newNum %=10;
-            segmentTree.updateSegment(new Range(digitInSum, digitInSum), newNum, queryNum);
-            queryNum ++;
 
-            if(nextLineAdd){
-                int nextLineNum = segmentTree.getDigitValue(digitInSum - 1);
-                int nextLineNewNum = nextLineNum + nextLineAdd;
-                if(nextLineNewNum >= 0 && nextLineNewNum <= 9){
-                    segmentTree.updateSegment(new Range(digitInSum - 1, digitInSum - 1), nextLineNewNum, queryNum);
-                    queryNum ++;
-                } else{
-                    const SegmentTree::DigitsInterval * digitsInterval = segmentTree.getBelongingSegment(digitInSum - 1);
-                    int furthestAffectedDigitNum = digitsInterval->range->min - 1;
-                    if(nextLineNewNum >= 10) {
-                        segmentTree.updateSegment(digitsInterval->range, 0, queryNum);
-                        queryNum++;
-                        nextLineNewNum %= 10;
-                        Range * tmp = new Range(furthestAffectedDigitNum, furthestAffectedDigitNum);
-                        segmentTree.updateSegment(tmp, segmentTree.getDigitValue(furthestAffectedDigitNum) + nextLineNewNum, queryNum);
-                        queryNum++;
-                    }else if(nextLineNewNum < 0){
-                        break;
-                    }
-                    else{
-                        cout<<"Error";
-                        break;
-                    }
+            SegmentTree::DigitsInterval * segmentBefore = segmentTree.getBelongingSegment(digitInSum - 1);
+            if((segmentBefore->value == 9 && newSum > 9) || (segmentBefore->value == 0 && newSum < 0)){
+                Range * range = Range::commonPart(segmentBefore->range, new Range(0, digitInSum));
+                int valueInRange;
+                int valueBeforeRange = segmentTree.getDigitValue(range->min - 1);
+                if(segmentBefore->value == 9 && newSum > 9 ){
+                    valueInRange = 0;
+                    valueBeforeRange += 1;
                 }
+                if(segmentBefore->value == 0 && newSum < 0){
+                    valueInRange = 9;
+                    valueBeforeRange -= 1;
+                }
+
+                segmentTree.updateSegment(range, valueInRange);
+                segmentTree.updateSegment(new Range(range->min - 1, range->min - 1), valueBeforeRange);
+            }else{
+                int nextLineAdd = 0;
+                if(newSum > 9){
+                    nextLineAdd += 1;
+                    newSum -= 10;
+                }
+                if(newSum < 0){
+                    nextLineAdd -= 1;
+                    newSum += 10;
+                }
+                segmentTree.updateSegment(new Range(digitInSum, digitInSum), newSum);
+                segmentTree.updateSegment(new Range(digitInSum - 1, digitInSum - 1), segmentBefore->value + nextLineAdd);
             }
+
         }
-    }*/
-    //cout<<segmentTree.getBelongingSegment(4)->range->min<<" "<<segmentTree.getBelongingSegment(4)->range->max<<"\n";
-    segmentTree.updateSegment(new Range(5,5), 4);
-    segmentTree.updateSegment(new Range(6,9), 1);
-    segmentTree.updateSegment(new Range(0,4), 1);
-    segmentTree.updateSegment(new Range(5,5), 1);
-
-    int num = 6;
-    cout<<segmentTree.getBelongingSegment(num)->range->min<<" "<<segmentTree.getBelongingSegment(num)->range->max<<"\n";
-
-    segmentTree.showNum();
+    }
 
     return 0;
 }
