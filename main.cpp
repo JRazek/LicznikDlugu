@@ -197,8 +197,8 @@ struct SegmentTree{
                 newLeftInterval->range->max = leftOutNodeID;
                 newLeftInterval->lastUpdate = queryNum;
                 newLeftInterval->value = leftInterval->value;
-                leftInterval = nullptr;
                 vector<BinaryNode *> affected = rangeQuery(newLeftInterval->range);
+                delete (leftInterval);
                 for(BinaryNode * n : affected){
                     n->stringBelonging = newLeftInterval;
                 }
@@ -212,8 +212,8 @@ struct SegmentTree{
                 newRightInterval->range->min = rightOutNodeID;
                 newRightInterval->lastUpdate = queryNum;
                 newRightInterval->value = rightInterval->value;
-                rightInterval = nullptr;
                 vector<BinaryNode *> affected = rangeQuery(newRightInterval->range);
+                delete (rightInterval);
                 for(BinaryNode * n : affected){
                     n->stringBelonging = newRightInterval;
                 }
@@ -332,10 +332,12 @@ int main() {
     }*/
     //cout<<segmentTree.getBelongingSegment(4)->range->min<<" "<<segmentTree.getBelongingSegment(4)->range->max<<"\n";
     segmentTree.updateSegment(new Range(5,5), 4);
-    segmentTree.updateSegment(new Range(5,5), 9);
- //   segmentTree.updateSegment(new Range(6,9), 2);
-    //segmentTree.updateSegment(new Range(5,7), 1);
-    cout<<segmentTree.getBelongingSegment(4)->range->min<<" "<<segmentTree.getBelongingSegment(4)->range->max<<"\n";
+    segmentTree.updateSegment(new Range(6,9), 1);
+    segmentTree.updateSegment(new Range(0,4), 1);
+    segmentTree.updateSegment(new Range(5,5), 1);
+
+    int num = 6;
+    cout<<segmentTree.getBelongingSegment(num)->range->min<<" "<<segmentTree.getBelongingSegment(num)->range->max<<"\n";
 
     segmentTree.showNum();
 
