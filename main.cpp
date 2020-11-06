@@ -1,7 +1,8 @@
 #include <iostream>
 #include <cmath>
-#include<string>
+#include <string>
 #include <vector>
+
 using namespace std;
 struct Range{
     int min;
@@ -236,6 +237,7 @@ struct SegmentTree{
             n->stringBelonging = digitsInterval;
         }
         this->queryNum ++;
+        delete range;
     }
     string getFullNum(){
         string s = "";
@@ -335,6 +337,7 @@ int main() {
                 segmentTree.updateSegment(new Range(digitInSum, digitInSum), newSum);
                 segmentTree.updateSegment(range, valueInRange);
                 segmentTree.updateSegment(new Range(range->min - 1, range->min - 1), valueBeforeRange);
+                delete range;
             }
             else{
                 int nextLineAdd = 0;
@@ -357,6 +360,7 @@ int main() {
                 if(nextLineValue > 9 || nextLineValue < 0){
                     cout<<"ERROR\n";
                 }
+                delete segmentBefore;
             }
 
             // cout<<changeNum<<" ";*/
