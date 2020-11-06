@@ -237,11 +237,12 @@ struct SegmentTree{
         }
         this->queryNum ++;
     }
-    void showNum(){
+    string getFullNum(){
+        string s = "";
         for(int i = 0; i < debtLength; i ++){
-            cout<<getDigitValue(i);
+            s += to_string(getDigitValue(i));
         }
-        cout<<"\n";
+        return s;
     }
 };
 
@@ -292,10 +293,9 @@ int main() {
             int digitNum = sum.size() - (stoi(args[1]) - 1) - 1;
             cout << segmentTree.getDigitValue(digitNum) << "\n";
             answer ++;
-            if(answer == 1175) {
-               // cout<<segmentTree.getBelongingSegment(digitNum)->lastUpdate;
-                cout<<"";
-            }
+
+           // string tmpAdded = addNumbers(internal, external);
+           // string tmpTree = segmentTree.getFullNum();
         }else{
             int changedDigit = internal.size() - stoi(args[1]);
             int changedFor = stoi(args[2]);
@@ -318,7 +318,7 @@ int main() {
 
             SegmentTree::DigitsInterval * segmentBefore = segmentTree.getBelongingSegment(digitInSum - 1);
             if((segmentBefore->value == 9 && newSum > 9) || (segmentBefore->value == 0 && newSum < 0)){
-                Range * range = Range::commonPart(segmentBefore->range, new Range(0, digitInSum));
+                Range * range = Range::commonPart(segmentBefore->range, new Range(0, digitInSum - 1));//the holy fix is digitInSum - 1!
                 int valueInRange;
                 int valueBeforeRange = segmentTree.getDigitValue(range->min - 1);
                 if(segmentBefore->value == 9 && newSum > 9 ){
@@ -338,9 +338,6 @@ int main() {
             }
             else{
                 int nextLineAdd = 0;
-                if(newSum > 18 || newSum < -9){
-                    cout<<"";
-                }
                 if(newSum > 9){
                     nextLineAdd = 1;
                     newSum -= 10;
@@ -349,7 +346,6 @@ int main() {
                     nextLineAdd = -1;
                     newSum += 10;
                 }
-
                 int nextLineValue = segmentBefore->value + nextLineAdd;
 
                 segmentTree.updateSegment(new Range(digitInSum, digitInSum), newSum);
@@ -369,6 +365,7 @@ int main() {
             changeNum++;
         }
     }
+    //segmentTree.showNum();
     /*
     segmentTree.showNum();
     segmentTree.updateSegment(new Range(7,9), 0);
