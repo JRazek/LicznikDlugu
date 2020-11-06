@@ -286,7 +286,9 @@ int main() {
         getline(cin, line);
         args = split(line);
         char queryType = args[0][0];
-
+        if(answer == 12){
+            break;
+        }
         if(queryType == 'S'){
             int digitNum = sum.size() - (stoi(args[1]) - 1) - 1;
             cout << segmentTree.getDigitValue(digitNum) << "\n";
@@ -317,12 +319,15 @@ int main() {
                 if(segmentBefore->value == 9 && newSum > 9 ){
                     valueInRange = 0;
                     valueBeforeRange += 1;
+                    newSum -= 10;
                 }
                 if(segmentBefore->value == 0 && newSum < 0){
                     valueInRange = 9;
                     valueBeforeRange -= 1;
+                    newSum += 10;
                 }
 
+                segmentTree.updateSegment(new Range(digitInSum, digitInSum), newSum);
                 segmentTree.updateSegment(range, valueInRange);
                 segmentTree.updateSegment(new Range(range->min - 1, range->min - 1), valueBeforeRange);
             }else{
@@ -341,6 +346,6 @@ int main() {
 
         }
     }
-
+    segmentTree.showNum();
     return 0;
 }
