@@ -144,7 +144,7 @@ struct SegmentTree{
     }
     int getDigitValue(const int digitNumber){
         const BinaryNode * node = nodes[digitNumber + pow(2, height - 1) - 1];
-        int bestUpdate = -2;
+        int bestUpdate = -10;
         int value ;
         while(true){
             cout<<"";
@@ -164,9 +164,6 @@ struct SegmentTree{
         if(digitNum < 0 || digitNum >= debtLength){
             return nullptr;
         }
-        if(digitNum == 4527){
-            cout<<"";
-        }
         int nodeID = digitNum + pow(2, height - 1) - 1;
         BinaryNode * n = nodes[nodeID];
         DigitsInterval * curr = n->stringBelonging;//this must be not null
@@ -182,9 +179,15 @@ struct SegmentTree{
         return curr;
     }
     void updateSegment(Range * range, int value){
+        if(value == -10){
+            cout<<"";
+        }
         if(value < 0 || value > 9){
             cout<<"ERROR!";
             return;
+        }
+        if(this->queryNum == 2816){
+            cout<<"";
         }
         vector<BinaryNode *> nodes = rangeQuery(range);
         DigitsInterval * digitsInterval = new DigitsInterval(range);
@@ -282,8 +285,6 @@ int main() {
     int changeNum = 0;
     int answer = 0;
     for(int i = 0; i < queriesCount; i++){
-
-
         getline(cin, line);
         args = split(line);
         char queryType = args[0][0];
@@ -292,6 +293,7 @@ int main() {
             cout << segmentTree.getDigitValue(digitNum) << "\n";
             answer ++;
             if(answer == 1175) {
+               // cout<<segmentTree.getBelongingSegment(digitNum)->lastUpdate;
                 cout<<"";
             }
         }else{
@@ -336,7 +338,9 @@ int main() {
             }
             else{
                 int nextLineAdd = 0;
-                bool h = false;
+                if(newSum > 18 || newSum < -9){
+                    cout<<"";
+                }
                 if(newSum > 9){
                     nextLineAdd = 1;
                     newSum -= 10;
@@ -345,17 +349,18 @@ int main() {
                     nextLineAdd = -1;
                     newSum += 10;
                 }
-                if(newSum == 2 && nextLineAdd == 1){
-                    //segmentTree.showNum();
-                }
+
+                int nextLineValue = segmentBefore->value + nextLineAdd;
+
                 segmentTree.updateSegment(new Range(digitInSum, digitInSum), newSum);
-                segmentTree.updateSegment(new Range(digitInSum - 1, digitInSum - 1), segmentBefore->value + nextLineAdd);
-                if(newSum == 2 && nextLineAdd == 1){
-                    //segmentTree.showNum();
+                segmentTree.updateSegment(new Range(digitInSum - 1, digitInSum - 1), nextLineValue);
+
+                if(newSum > 9 || newSum < 0){
+                    cout<<"ERROR";
                 }
-            }
-            if(newSum > 9 || newSum < 0){
-                cout<<"ERROR";
+                if(nextLineValue > 9 || nextLineValue < 0){
+                    cout<<"ERROR";
+                }
             }
 
            // cout<<changeNum<<" ";*/
