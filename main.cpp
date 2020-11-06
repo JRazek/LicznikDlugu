@@ -183,7 +183,7 @@ struct SegmentTree{
             cout<<"";
         }
         if(value < 0 || value > 9){
-            cout<<"ERROR!";
+            cout<<"ERROR!\n";
             return;
         }
         if(this->queryNum == 2816){
@@ -352,10 +352,10 @@ int main() {
                 segmentTree.updateSegment(new Range(digitInSum - 1, digitInSum - 1), nextLineValue);
 
                 if(newSum > 9 || newSum < 0){
-                    cout<<"ERROR";
+                    cout<<"ERROR\n";
                 }
                 if(nextLineValue > 9 || nextLineValue < 0){
-                    cout<<"ERROR";
+                    cout<<"ERROR\n";
                 }
             }
 
