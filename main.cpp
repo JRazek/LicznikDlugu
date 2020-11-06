@@ -365,18 +365,5 @@ int main() {
             changeNum++;
         }
     }
-    //segmentTree.showNum();
-    /*
-    segmentTree.showNum();
-    segmentTree.updateSegment(new Range(7,9), 0);
-    segmentTree.updateSegment(new Range(5,5), 6);
-    segmentTree.updateSegment(new Range(7,9), 6);
-    segmentTree.updateSegment(new Range(8,8), 1);
-    segmentTree.updateSegment(new Range(1,8), 0);
-    segmentTree.showNum();
-
-    int num = 1;
-    SegmentTree::DigitsInterval * d = segmentTree.getBelongingSegment(num);
-    cout<<d->range->min<<" "<<d->range->max<<" "<<d->value<<"\n";*/
     return 0;
 }
