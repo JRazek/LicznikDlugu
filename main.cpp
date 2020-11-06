@@ -235,7 +235,6 @@ struct SegmentTree{
         this->queryNum ++;
     }
     void showNum(){
-        cout<<"\n";
         for(int i = 0; i < debtLength; i ++){
             cout<<getDigitValue(i);
         }
@@ -258,8 +257,8 @@ vector<string> split(string str, char divider = ' '){
 }
 
 int main() {
-    std::ios_base::sync_with_stdio(false);
-    std::cin.tie(NULL);
+   // std::ios_base::sync_with_stdio(false);
+   // std::cin.tie(NULL);
 
     string line;
     getline(cin, line);
@@ -280,19 +279,21 @@ int main() {
     }
     SegmentTree segmentTree(sum);
 
+    int changeNum = 0;
     int answer = 0;
-
     for(int i = 0; i < queriesCount; i++){
+
+
         getline(cin, line);
         args = split(line);
         char queryType = args[0][0];
-        if(answer == 12){
-            break;
-        }
         if(queryType == 'S'){
             int digitNum = sum.size() - (stoi(args[1]) - 1) - 1;
             cout << segmentTree.getDigitValue(digitNum) << "\n";
             answer ++;
+            if(answer == 1175) {
+                cout<<"";
+            }
         }else{
             int changedDigit = internal.size() - stoi(args[1]);
             int changedFor = stoi(args[2]);
@@ -300,9 +301,11 @@ int main() {
             int delta;
             if(queryType == 'W'){
                 delta = changedFor - (internal[changedDigit] -'0');
+                internal[changedDigit] = to_string(changedFor)[0];
             }
             else{
                 delta = changedFor - (external[changedDigit] -'0');
+                external[changedDigit] = to_string(changedFor)[0];
             }
 
             int digitInSum = changedDigit + 1;
@@ -330,22 +333,48 @@ int main() {
                 segmentTree.updateSegment(new Range(digitInSum, digitInSum), newSum);
                 segmentTree.updateSegment(range, valueInRange);
                 segmentTree.updateSegment(new Range(range->min - 1, range->min - 1), valueBeforeRange);
-            }else{
+            }
+            else{
                 int nextLineAdd = 0;
+                bool h = false;
                 if(newSum > 9){
-                    nextLineAdd += 1;
+                    nextLineAdd = 1;
                     newSum -= 10;
                 }
                 if(newSum < 0){
-                    nextLineAdd -= 1;
+                    nextLineAdd = -1;
                     newSum += 10;
+                }
+                if(newSum == 2 && nextLineAdd == 1){
+                    //segmentTree.showNum();
                 }
                 segmentTree.updateSegment(new Range(digitInSum, digitInSum), newSum);
                 segmentTree.updateSegment(new Range(digitInSum - 1, digitInSum - 1), segmentBefore->value + nextLineAdd);
+                if(newSum == 2 && nextLineAdd == 1){
+                    //segmentTree.showNum();
+                }
+            }
+            if(newSum > 9 || newSum < 0){
+                cout<<"ERROR";
             }
 
+           // cout<<changeNum<<" ";*/
+           // segmentTree.showNum();
+           // cout<<"";
+            changeNum++;
         }
     }
+    /*
     segmentTree.showNum();
+    segmentTree.updateSegment(new Range(7,9), 0);
+    segmentTree.updateSegment(new Range(5,5), 6);
+    segmentTree.updateSegment(new Range(7,9), 6);
+    segmentTree.updateSegment(new Range(8,8), 1);
+    segmentTree.updateSegment(new Range(1,8), 0);
+    segmentTree.showNum();
+
+    int num = 1;
+    SegmentTree::DigitsInterval * d = segmentTree.getBelongingSegment(num);
+    cout<<d->range->min<<" "<<d->range->max<<" "<<d->value<<"\n";*/
     return 0;
 }
