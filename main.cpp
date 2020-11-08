@@ -57,6 +57,9 @@ struct SegmentTree{
             this->id = id;
             this->range = r;
         }
+        ~BinaryNode(){
+            delete range;
+        }
     };
 
     int debtLength;
@@ -65,10 +68,19 @@ struct SegmentTree{
 
     int queryNum = 0;
 
+    vector<DigitsInterval *> toDelete1;
+    vector<Range *> toDelete2;
+
     vector< BinaryNode * > nodes;
     ~SegmentTree(){
         for(int i = 0; i < nodes.size(); i ++){
             delete nodes[i];
+        }
+        for(int i = 0; i < toDelete1.size(); i ++){
+            delete toDelete1[i];
+        }
+        for(int i = 0; i < toDelete2.size(); i ++){
+            delete toDelete2[i];
         }
     }
     SegmentTree(string d){
@@ -108,6 +120,7 @@ struct SegmentTree{
             if(i == 0 || prevValue != value){
                 n->stringBelonging = new DigitsInterval(n->range);
                 n->stringBelonging->value = value;
+                toDelete1.push_back(n->stringBelonging);
             }else{
                 n->stringBelonging = nodes[nodeID - 1]->stringBelonging;
                 n->stringBelonging->range->max = n->range->max;
@@ -204,6 +217,7 @@ struct SegmentTree{
         DigitsInterval * digitsInterval = new DigitsInterval(range);
         digitsInterval->value = value;
         digitsInterval->lastUpdate = this->queryNum;
+        toDelete1.push_back(digitsInterval);
 
         int leftOutNodeID = range->min - 1;
         int rightOutNodeID = range->max + 1;
@@ -221,6 +235,7 @@ struct SegmentTree{
                 for(BinaryNode * n : affected){
                     n->stringBelonging = newLeftInterval;
                 }
+                toDelete1.push_back(newLeftInterval);
             }
         }
         if(rightInterval != nullptr) {
@@ -235,6 +250,7 @@ struct SegmentTree{
                 for(BinaryNode * n : affected){
                     n->stringBelonging = newRightInterval;
                 }
+                toDelete1.push_back(newRightInterval);
             }
         }
 
@@ -243,6 +259,7 @@ struct SegmentTree{
             n->stringBelonging = digitsInterval;
         }
         this->queryNum ++;
+        toDelete2.push_back(range);
     }
     string getFullNum(){
         string s = "";
@@ -325,7 +342,9 @@ int main() {
 
             SegmentTree::DigitsInterval * segmentBefore = segmentTree.getBelongingSegment(digitInSum - 1);
             if((segmentBefore->value == 9 && newSum > 9) || (segmentBefore->value == 0 && newSum < 0)){
-                Range * range = Range::commonPart(segmentBefore->range, new Range(0, digitInSum - 1));//the holy fix is digitInSum - 1!
+                Range * rightRange = new Range(0, digitInSum - 1);
+                Range * range = Range::commonPart(segmentBefore->range, rightRange);//the holy fix is digitInSum - 1!
+                delete rightRange;
                 int valueInRange;
                 int valueBeforeRange = segmentTree.getDigitValue(range->min - 1);
                 if(segmentBefore->value == 9 && newSum > 9 ){
@@ -338,11 +357,9 @@ int main() {
                     valueBeforeRange -= 1;
                     newSum += 10;
                 }
-                Range * tmpR = new Range(digitInSum, digitInSum);
-                segmentTree.updateSegment(tmpR, newSum);
+                segmentTree.updateSegment(new Range(digitInSum, digitInSum), newSum);
                 segmentTree.updateSegment(range, valueInRange);
-                tmpR = new Range(range->min - 1, range->min - 1);
-                segmentTree.updateSegment(tmpR, valueBeforeRange);
+                segmentTree.updateSegment(new Range(range->min - 1, range->min - 1), valueBeforeRange);
             }
             else{
                 int nextLineAdd = 0;
